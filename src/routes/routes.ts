@@ -12,7 +12,7 @@ if (environment === 'local' || environment === 'dev') {
 }
 
 router.get('/', (req: any, res: Response) => {
-    res.send('PERPETTUM-BACKEND API is running');
+    res.send('PERPETTUM-ADMIN-BACKEND API is running');
 });
 
 router.use('/invite', inviteRoutes);
