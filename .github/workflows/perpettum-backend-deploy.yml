@@ -1,0 +1,64 @@
+name: perpettum-admin-backend
+
+on:
+    push: # When pushed to testing branch
+        branches: [testing]
+
+env:
+    CLOUD_RUN_PROJECT_ID: ${{ secrets.CLOUD_RUN_PROJECT_NAME }}
+    CLOUD_RUN_REGION: asia-south1
+    REPO_NAME: perpettum-backend
+    VPC_CONNECTOR_NAME: vpc-connector
+
+jobs:
+    build-and-deploy:
+        name: Setup, Build, and Deploy
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # This step is where our service account will be authenticated
+            - uses: google-github-actions/setup-gcloud@v0.2.0
+              with:
+                  project_id: ${{ secrets.CLOUD_RUN_PROJECT_NAME }}
+                  service_account_key: ${{ secrets.CLOUD_RUN_SERVICE_ACCOUNT }}
+                  service_account_email: ${{ secrets.CLOUD_RUN_SERVICE_ACCOUNT_EMAIL }}
+
+            - name: Enable the necessary APIs and enable docker auth
+              run: |-
+                  gcloud services enable containerregistry.googleapis.com
+                  gcloud services enable run.googleapis.com
+                  gcloud --quiet auth configure-docker
+
+            # - name: Create Datastore credentials JSON file
+            #   run: echo '${{ secrets.DATASTORE_CREDENTIALS_JSON }}' > ../datastore-credentials.json  this is for purpose if needed
+
+            - name: Build and tag image
+              run: |-
+                  docker build . --tag "gcr.io/$CLOUD_RUN_PROJECT_ID/$REPO_NAME:$GITHUB_SHA"
+            - name: Push image to GCR
+              run: |-
+                  docker push gcr.io/$CLOUD_RUN_PROJECT_ID/$REPO_NAME:$GITHUB_SHA
+            - name: Deploy
+              run: |-
+                  gcloud components install beta --quiet
+                  gcloud beta run deploy $REPO_NAME --image gcr.io/$CLOUD_RUN_PROJECT_ID/$REPO_NAME:$GITHUB_SHA \
+                    --project $CLOUD_RUN_PROJECT_ID \
+                    --platform managed \
+                    --region $CLOUD_RUN_REGION \
+                    --allow-unauthenticated \
+                    --quiet \
+                    --set-env-vars NODE_ENV=production \
+                    --set-env-vars PROJECT_ID=${{ secrets.CLOUD_RUN_PROJECT_NAME }} \
+                    --set-env-vars CLIENT_EMAIL=${{ secrets.CLOUD_RUN_SERVICE_ACCOUNT_EMAIL }} \
+                    --set-env-vars PRIVATE_KEY=${{ secrets.CLOUD_RUN_SERVICE_PRIVATE_KEY }} \
+                    --set-env-vars DATABASE_URL=${{ secrets.FIRESTORE_DATABASE_URL }} \
+                    --set-env-vars STORAGE_BUCKET=${{ secrets.FIRESTORE_STORAGE_BUCKET }} \
+                    --set-env-vars TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }} \
+                    --set-env-vars TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }} \
+                    --set-env-vars TWILIO_NUMBER=${{ secrets.TWILIO_NUMBER }} \
+                    --set-env-vars ARANGO_DB_URL=${{ secrets.ARANGO_DB_URL }} \
+                    --set-env-vars ARANGO_DB_USERNAME=${{ secrets.ARANGO_DB_USERNAME }} \
+                    --set-env-vars ARANGO_DB_PASSWORD=${{ secrets.ARANGO_DB_PASSWORD }} \
+                    --vpc-connector $VPC_CONNECTOR_NAME

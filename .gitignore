@@ -1,0 +1,7 @@
+node_modules
+build
+.env
+serviceAccountKey.json
+
+
+output.mp3
