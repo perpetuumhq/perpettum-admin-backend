@@ -8,7 +8,7 @@ export const allTopics = async (req: any, res: Response, next: NextFunction): Pr
     try {
         const { arangodb } = req.app.locals;
         const { active } = req.query;
-        const { data, count } = await service.allTopics(arangodb);
+        const { data, count } = await service.allTopics(arangodb, active);
 
         res.send({
             status: 200,

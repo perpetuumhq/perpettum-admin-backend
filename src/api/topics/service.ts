@@ -6,11 +6,16 @@ import queryArangoDB from "../../helpers/arango_helpers/queryArangoDB";
 
 export const allTopics = async (
     arangodb: Database,
+    active = null
 ): Promise<any> => {
+    // in active variable, can pass null or true/false, if not null ,then will filter by active
     const builder = build(
         returnExpr(
             joinMultiple(
-                forIn(initialBuilderState, COL.topics, 'topic'),
+                active !== null ? filter(
+                    forIn(initialBuilderState, COL.topics, 'topic'),
+                    `topic.isActive == @active`
+                ) : forIn(initialBuilderState, COL.topics, 'topic'),
                 'topic',
                 [
                     { fieldName: 'relatedTopics', targetCollection: COL.topics, joinType: 'manyToMany' },
@@ -27,7 +32,10 @@ export const allTopics = async (
     );
     const finalQuery = {
         query: builder.query,
-        bindVars: { ...builder.bindVars }
+        bindVars: {
+            ...builder.bindVars,
+            ...(active !== null && { active: Boolean(active) })
+        }
     };
     const { data, count } = await queryArangoDB(arangodb, finalQuery, true);
     return { data, count };
