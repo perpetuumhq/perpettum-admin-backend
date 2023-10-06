@@ -1,6 +1,7 @@
 import Multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { STORAGE_FOLDER } from '../config/config';
+import { STORAGE_SIZE_LIMIT } from '../constants/const';
 
 const googleCloudStorageEngine: Multer.StorageEngine = {
     _handleFile: (req, file, cb) => {
@@ -40,4 +41,9 @@ const googleCloudStorageEngine: Multer.StorageEngine = {
     }
 };
 
-export const upload = Multer({ storage: googleCloudStorageEngine });
+export const upload = Multer({
+    storage: googleCloudStorageEngine,
+    limits: {
+        fileSize: STORAGE_SIZE_LIMIT.ROOM_SIZE
+    }
+});

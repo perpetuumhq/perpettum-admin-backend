@@ -5,14 +5,13 @@ type arangoQuery = {
     bindVars: { [key: string]: any };
 }
 
-export default async function queryArangoDB(arangodb: Database, query: arangoQuery): Promise<any | null> {
+export default async function queryArangoDB(arangodb: Database, query: arangoQuery, count = false): Promise<any | null> {
     try {
         const res: any = await arangodb.query(query.query, query.bindVars);
-
         return {
-            data: res?._result,
+            data: res?._result || [],
             hasMore: res?._hasMore,
-            ...(res?._count && { count: res?._count }),
+            ...(res?.count && { count: res?.count }),
         }
     } catch (err) {
         console.log(err);

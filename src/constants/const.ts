@@ -78,9 +78,14 @@ export const INVITE_TYPE = {
 };
 
 export const STORAGE_PATH = {
-    IMAGE_PATH: 'images',
+    ROOM_PATH: 'images',
     AUDIO_PATH: 'audio'
 };
+
+export const STORAGE_SIZE_LIMIT = {
+    ROOM_SIZE: 10 * 1024 * 1024, // 10 MB
+    AUDIO_SIZE: 10 * 1024 * 1024, // 10 MB
+}
 
 export const STATUS_MSG = {
     FIND: 'Retrieve records successfully.',

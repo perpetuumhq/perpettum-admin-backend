@@ -25,9 +25,11 @@ export const limit = (builder: QueryBuilder, count: number): QueryBuilder => ({
     query: [...builder.query, `LIMIT ${count}`],
 });
 
-export const returnExpr = (builder: QueryBuilder, expression: string): QueryBuilder => ({
+type ExpressionInput = string | (() => string);
+
+export const returnExpr = (builder: QueryBuilder, expression: ExpressionInput): QueryBuilder => ({
     ...builder,
-    query: [...builder.query, `RETURN ${expression}`],
+    query: [...builder.query, `RETURN ${typeof expression === 'function' ? (expression as () => string)() : expression}`],
 });
 
 export const bind = (builder: QueryBuilder, variable: string, value: any): QueryBuilder => ({
@@ -61,29 +63,96 @@ export const create = (builder: QueryBuilder, collection: string): QueryBuilder 
     query: [...builder.query, `INSERT @body INTO ${collection}`],
 });
 
-// Usage:
-const COL = { users: 'users' };
-const builder = build(
-    returnExpr(
-        limit(
-            filter(
-                forIn(
-                    initialBuilderState,
-                    COL.users,
-                    'user'
-                ),
-                'user.age > @minAge'
-            ),
-            10
-        ),
-        'user'
-    )
-);
+export const remove = (builder: QueryBuilder, alias: string, collection: string): QueryBuilder => ({
+    ...builder,
+    query: [...builder.query, `REMOVE ${alias} IN ${collection}`],
+});
 
-// Now bind the variables:
-const finalQuery = {
-    query: builder.query,
-    bindVars: { ...builder.bindVars, minAge: 21 },
+export const forMultipleJoin = (
+    builder: QueryBuilder,
+    initialCollection: string,
+    alias: string,
+    joins: { [key: string]: { collection: string, field: string, alias: string } }
+): QueryBuilder => {
+    const joinQueries = Object.entries(joins).map(([joinField, joinDetails]) =>
+        `LET ${joinField}Details = (FOR ${joinDetails.alias} IN ${joinDetails.collection} FILTER ${joinDetails.alias}._key IN ${alias}.${joinDetails.field} RETURN ${joinDetails.alias})`
+    );
+
+    return {
+        ...builder,
+        query: [
+            ...builder.query,
+            `FOR ${alias} IN ${initialCollection}`,
+            ...joinQueries
+        ]
+    };
 };
 
-console.log(finalQuery);
+type JoinType = 'oneToOne' | 'manyToMany';
+
+type JoinField = {
+    fieldName: string;
+    targetCollection: string;
+    joinType: JoinType;
+};
+
+export const joinMultiple = (
+    builder: QueryBuilder,
+    alias: string,
+    joinFields: JoinField[]
+): QueryBuilder => {
+    let updatedBuilder = { ...builder };
+
+    for (const fieldObj of joinFields) {
+        const joinAlias = `${alias}_${fieldObj.fieldName}`;
+
+        let joinQuery: string;
+
+        if (fieldObj.joinType === 'manyToMany') {
+            joinQuery = `LET ${joinAlias} = (FOR item IN ${fieldObj.targetCollection} FILTER item._key IN ${alias}.${fieldObj.fieldName} RETURN item)`;
+        } else if (fieldObj.joinType === 'oneToOne') {
+            joinQuery = `LET ${joinAlias} = (FOR item IN ${fieldObj.targetCollection} FILTER item._key == ${alias}.${fieldObj.fieldName} RETURN item)`;
+        } else {
+            throw new Error(`Unsupported join type: ${fieldObj.joinType}`);
+        }
+
+        updatedBuilder = {
+            ...updatedBuilder,
+            query: [
+                ...updatedBuilder.query,
+                joinQuery
+            ],
+        };
+    }
+
+    return updatedBuilder;
+};
+
+
+
+
+
+// Usage:
+// const COL = { users: 'users' };
+// const builder = build(
+//     returnExpr(
+//         limit(
+//             filter(
+//                 forIn(
+//                     initialBuilderState,
+//                     COL.users,
+//                     'user'
+//                 ),
+//                 'user.age > @minAge'
+//             ),
+//             10
+//         ),
+//         'user'
+//     )
+// );
+
+// Now bind the variables:
+// const finalQuery = {
+//     query: builder.query,
+//     bindVars: { ...builder.bindVars, minAge: 21 },
+// };

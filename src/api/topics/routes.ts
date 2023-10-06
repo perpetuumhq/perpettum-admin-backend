@@ -1,22 +1,16 @@
 import express from 'express';
 import { auth } from '../../middlewares/auth';
 import {
-    allActiveTopics,
     allTopics,
     createTopic,
     deleteTopic,
     topicPublish,
-    updateTopic,
-    updateTopicOrder
+    updateTopic
 } from './controllers';
 import staticSchemaValidation from '../../middlewares/staticSchemaValidation';
 import { createTopicSchema, updateTopicOrderSchema } from './validations';
 
 const router = express.Router();
-
-router.get('/', auth, allActiveTopics);
-
-router.put('/order', auth, staticSchemaValidation(updateTopicOrderSchema), updateTopicOrder);
 
 router.post('/', staticSchemaValidation(createTopicSchema), createTopic);
 

@@ -1,0 +1,80 @@
+import { Database } from "arangojs";
+import { build, create, filter, forIn, initialBuilderState, joinMultiple, remove, returnExpr, update } from "../../helpers/arango_helpers/dymamicArangoQuery";
+import { COL } from "../../constants/const";
+import queryArangoDB from "../../helpers/arango_helpers/queryArangoDB";
+
+
+export const allTopics = async (
+    arangodb: Database,
+): Promise<any> => {
+    const builder = build(
+        returnExpr(
+            joinMultiple(
+                forIn(initialBuilderState, COL.topics, 'topic'),
+                'topic',
+                [
+                    { fieldName: 'relatedTopics', targetCollection: COL.topics, joinType: 'manyToMany' },
+                    { fieldName: 'subs', targetCollection: COL.topics, joinType: 'manyToMany' }
+                ]
+            ),
+            () => `
+            MERGE(topic, {
+                relatedTopics: topic_relatedTopics,
+                subs: topic_subs
+            })
+        `
+        )
+    );
+    const finalQuery = {
+        query: builder.query,
+        bindVars: { ...builder.bindVars }
+    };
+    const { data, count } = await queryArangoDB(arangodb, finalQuery, true);
+    return { data, count };
+}
+
+export const createTopic = async (
+    arangodb: Database,
+    body: any,
+): Promise<any> => {
+    const builder = build(
+        create(initialBuilderState, COL.topics)
+    );
+    const finalQuery = {
+        query: builder.query,
+        bindVars: { ...builder.bindVars, body: body }
+    };
+    await queryArangoDB(arangodb, finalQuery);
+    return 'New Topic Created!';
+}
+
+export const updateTopic = async (
+    arangodb: Database,
+    topicId: string,
+    body: any,
+): Promise<any> => {
+    const builder = build(
+        update(initialBuilderState, '@_key', COL.topics, '@body')
+    );
+    const finalQuery = {
+        query: builder.query,
+        bindVars: { ...builder.bindVars, _key: topicId, body: body }
+    };
+    await queryArangoDB(arangodb, finalQuery);
+    return 'Topic Updated!';
+}
+
+export const deleteTopic = async (
+    arangodb: Database,
+    topicId: string,
+): Promise<any> => {
+    const builder = build(
+        remove(initialBuilderState, '@_key', COL.topics)
+    );
+    const finalQuery = {
+        query: builder.query,
+        bindVars: { ...builder.bindVars, _key: topicId }
+    };
+    await queryArangoDB(arangodb, finalQuery);
+    return 'Topic Deleted!';
+}
