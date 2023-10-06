@@ -129,6 +129,45 @@ export const joinMultiple = (
 };
 
 
+type KeyInput = string | string[];
+interface CheckCriterion {
+    collectionName: string;
+    fieldName: string;
+    relationType: 'array' | 'direct';
+    keys: KeyInput;  // keys to be checked
+}
+
+export const checkKeysInFieldsDynamic = (
+    builder: QueryBuilder,
+    criteria: CheckCriterion[]
+): QueryBuilder => {
+    const filters: string[] = [];
+
+    criteria.forEach(({ collectionName, fieldName, relationType, keys }) => {
+        const keyArrayVarName = `${fieldName}KeyArray`;
+        builder.bindVars[keyArrayVarName] = Array.isArray(keys) ? keys : [keys];
+
+        if (relationType === 'array') {
+            filters.push(`ANY topicKey IN doc.${fieldName} SATISFIES topicKey IN @${keyArrayVarName}`);
+        } else if (relationType === 'direct') {
+            filters.push(`FOR item IN ${collectionName} FILTER item._key == doc.${fieldName} && item._key IN @${keyArrayVarName} RETURN true`);
+        }
+    });
+
+    const combinedFilter = filters.join(' OR ');
+
+    return {
+        ...builder,
+        query: [
+            ...builder.query,
+            `FOR doc IN ${criteria[0].collectionName}`,
+            `FILTER ${combinedFilter}`,
+            `RETURN doc`
+        ]
+    };
+};  // there is some issue in this function
+
+
 
 
 

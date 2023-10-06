@@ -64,32 +64,7 @@ export const deleteTopic = async (req: any, res: Response, next: NextFunction): 
     try {
         const { arangodb } = req.app.locals;
         const { topicId } = req.params;
-        // const topicRef = .collection(COL.topics).doc(topicId);
-        // const topic = await topicRef.get();
-        // if (!topic.exists) {
-        //     throw new Error('Topic not found!');
-        // }
-        // // check this topic already been used in any sub topics or relatedTopics
-        // const subTopics = await db
-        //     .collection(COL.topics)
-        //     .where('subs', 'array-contains', topicId)
-        //     .get();
-        // if (!subTopics.empty) {
-        //     throw new Error('This topic is already used in sub topics! Remove Them First.');
-        // }
-        // const relatedTopics = await db
-        //     .collection(COL.topics)
-        //     .where('relatedTopics', 'array-contains', topicId)
-        //     .get();
-        // if (!relatedTopics.empty) {
-        //     throw new Error('This topic is already used in related topics! Remove Them First.');
-        // }
-        // // this topic is used in prompts
-        // const prompts = await db.collection(COL.prompts).where('topic', '==', topicId).get();
-        // if (!prompts.empty) {
-        //     throw new Error('This topic is already used in prompts! Delete Them First.');
-        // }
-        // await topicRef.delete();
+        // await service.existsConnectionWithOthers(arangodb, topicId); // need to check, will do later
         await service.deleteTopic(arangodb, topicId);
         res.send({
             status: 200,
