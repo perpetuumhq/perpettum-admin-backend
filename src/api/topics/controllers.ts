@@ -2,6 +2,7 @@ import { COL, STATUS_MSG } from '../../constants/const';
 import { NextFunction, Response } from 'express';
 import * as service from './service';
 import manageOutput from '../../helpers/data_helpers/manageOutputData';
+import { STORAGE_FOLDER, STORAGE_URL } from '../../config/config';
 
 
 export const allTopics = async (req: any, res: Response, next: NextFunction): Promise<void> => {
@@ -90,3 +91,23 @@ export const topicPublish = async (req: any, res: Response, next: NextFunction):
         next(e);
     }
 };
+
+export const uploadTopicImage = async (
+    req: any,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        const { db, admin } = req.app.locals;
+        const { bumpId } = req.params;
+        const imageUrl = `${STORAGE_URL}${STORAGE_FOLDER.room}/${req.file.filename}`;
+
+        res.send({
+            status: 200,
+            data: imageUrl,
+            message: STATUS_MSG.CREATE
+        });
+    } catch (e) {
+        next(e);
+    }
+}

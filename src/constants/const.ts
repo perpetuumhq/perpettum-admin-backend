@@ -13,7 +13,8 @@ export const COL = {
     calls: 'test_calls',
     notification: 'test_notification',
     feedback: 'test_feedback',
-    invite: 'test_invite'
+    invite: 'test_invite',
+    notificationTemplates: 'test_notificationTemplates',
 };
 export const EDGE_COL = {
     room: 'test_room',

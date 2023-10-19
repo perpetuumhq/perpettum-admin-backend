@@ -7,6 +7,10 @@ export const createTopicSchema = {
             type: 'string',
             sanitize: 'reqText'
         },
+        icon: {
+            type: 'string',
+            sanitize: 'reqText'
+        },
         description: {
             type: 'string',
             sanitize: 'reqText'
