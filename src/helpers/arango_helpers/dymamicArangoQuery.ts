@@ -20,6 +20,13 @@ export const filter = (builder: QueryBuilder, condition: string): QueryBuilder =
     query: [...builder.query, `FILTER ${condition}`],
 });
 
+
+export const filterGroup = (builder: QueryBuilder, conditions: string[]): QueryBuilder => ({
+    ...builder,
+    query: [...builder.query, `FILTER ${conditions.join(' && ')}`],
+});
+
+
 export const limit = (builder: QueryBuilder, count: number): QueryBuilder => ({
     ...builder,
     query: [...builder.query, `LIMIT ${count}`],
