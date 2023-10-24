@@ -1,4 +1,5 @@
 import { Database } from "arangojs";
+import { asyncForEach } from "../asyncForEach";
 
 
 const queryArangoKVStore = {
@@ -29,6 +30,28 @@ const queryArangoKVStore = {
             }
             throw e;
         }
-    }
+    },
+
+    async existsMany(db: Database, items: { col: string, key: string }[]): Promise<boolean[]> {
+        const results: boolean[] = [];
+        await asyncForEach(items, async (item) => {
+            const collection = db.collection(item.col);
+            try {
+                const doc = await collection.document(item.key);
+                results.push(!!doc);
+
+            } catch (e) {
+                if (e.isArangoError && e.errorNum === 1202) {
+                    // Document not found
+                    results.push(false);
+                } else {
+                    throw e;
+                }
+            }
+        });
+
+        return results;
+    },
+
 }
 export default queryArangoKVStore;
