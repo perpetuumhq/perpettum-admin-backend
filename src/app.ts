@@ -25,33 +25,33 @@ Sentry.init({
 });
 
 
-const storage = async () => {
-    const { db, realtimeDb, storage, admin, remoteConfig } = await firestoreConfig();
-    app.locals.db = db;
-    app.locals.storage = storage;
-    app.locals.admin = admin;
-    app.locals.realtimeDb = realtimeDb;
-    app.locals.remoteConfig = remoteConfig;
-};
-storage()
-    .then(() => {
-        // eslint-disable-next-line no-console
-        console.log('firestore connected!');
-    }) // eslint-disable-next-line no-console
-    .catch((err) => console.log(err));
+// const storage = async () => {
+//     const { db, realtimeDb, storage, admin, remoteConfig } = await firestoreConfig();
+//     app.locals.db = db;
+//     app.locals.storage = storage;
+//     app.locals.admin = admin;
+//     app.locals.realtimeDb = realtimeDb;
+//     app.locals.remoteConfig = remoteConfig;
+// };
+// storage()
+//     .then(() => {
+//         // eslint-disable-next-line no-console
+//         console.log('firestore connected!');
+//     }) // eslint-disable-next-line no-console
+//     .catch((err) => console.log(err));
 
-const connectArangoDB = async () => {
-    const arangodb = await arangodbConnect();
-    await arangodb.listDatabases();
-    app.locals.arangodb = arangodb;
-};
+// const connectArangoDB = async () => {
+//     const arangodb = await arangodbConnect();
+//     await arangodb.listDatabases();
+//     app.locals.arangodb = arangodb;
+// };
 
-connectArangoDB()
-    .then(() => {
-        // eslint-disable-next-line no-console
-        console.log('arangodb connected!');
-    }) // eslint-disable-next-line no-console
-    .catch((err) => console.log(err));
+// connectArangoDB()
+//     .then(() => {
+//         // eslint-disable-next-line no-console
+//         console.log('arangodb connected!');
+//     }) // eslint-disable-next-line no-console
+//     .catch((err) => console.log(err));
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -98,7 +98,35 @@ app.use((err: any, req: any, res: any, next: NextFunction) => {
     });
 });
 
-app.listen(PORT, () => {
-    // eslint-disable-next-line no-console
-    console.log(`Perpettum-backend running on port ${PORT}!`);
-});
+// app.listen(PORT, () => {
+//     // eslint-disable-next-line no-console
+//     console.log(`Perpettum-backend running on port ${PORT}!`);
+// });
+
+const dbConnect = async () => {
+    const { db, realtimeDb, storage, admin, remoteConfig } = await firestoreConfig();
+    app.locals.db = db;
+    app.locals.storage = storage;
+    app.locals.admin = admin;
+    app.locals.realtimeDb = realtimeDb;
+    app.locals.remoteConfig = remoteConfig;
+    console.log('firestore connected!');
+    // firestore connection done
+
+    const arangodb = await arangodbConnect();
+    await arangodb.listDatabases();
+    app.locals.arangodb = arangodb;
+    console.log('arangodb connected!');
+    // arangodb connection done
+};
+
+dbConnect()
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`Perpettum-backend running on port ${PORT}!`);
+        });
+    })
+    .catch((err) => {
+        console.log(err);
+        process.exit(1);
+    });
