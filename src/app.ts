@@ -104,13 +104,13 @@ app.use((err: any, req: any, res: any, next: NextFunction) => {
 // });
 
 const dbConnect = async () => {
-    // const { db, realtimeDb, storage, admin, remoteConfig } = await firestoreConfig();
-    // app.locals.db = db;
-    // app.locals.storage = storage;
-    // app.locals.admin = admin;
-    // app.locals.realtimeDb = realtimeDb;
-    // app.locals.remoteConfig = remoteConfig;
-    // console.log('firestore connected!');
+    const { db, realtimeDb, storage, admin, remoteConfig } = await firestoreConfig();
+    app.locals.db = db;
+    app.locals.storage = storage;
+    app.locals.admin = admin;
+    app.locals.realtimeDb = realtimeDb;
+    app.locals.remoteConfig = remoteConfig;
+    console.log('firestore connected!');
     // firestore connection done
 
     const arangodb = await arangodbConnect();
