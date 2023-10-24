@@ -11,8 +11,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write . --config ./.prettierrc.json",
-    "prepare": "husky install",
-    "prestart": "tsc && node build/scripts/manageCollectionScript.js"
+    "prepare": "husky install"
   },
   "husky": {
     "hooks": {
