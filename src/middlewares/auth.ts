@@ -8,7 +8,7 @@ interface DecodedToken {
 export const auth = (req: any, res: Response, next: NextFunction) => {
     // Get the token from the 'Authorization' header
     const authHeader = req.headers.authorization;
-    const timeZone = req.headers['Time-Zone'];
+    const timeZone = req.headers['Time-Zone'] ?? 'Asia/Kolkata';
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         throw new Error('You are not allowed/Unauthorized');
