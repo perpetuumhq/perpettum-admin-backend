@@ -2,7 +2,8 @@ import express, { Response } from 'express';
 import {
     generatePhoneOtp,
     verifyPhoneOtp,
-    grantAccess
+    grantAccess,
+    fetchUserAccess
 } from './controllers';
 import staticSchemaValidation from '../../middlewares/staticSchemaValidation';
 import {
@@ -29,4 +30,10 @@ router.post(
     grantAccess
 );
 
+router.post(
+    '/fetch-access',
+    staticSchemaValidation(grantAccessVerificationSchema),
+    auth,
+    fetchUserAccess
+);
 export default router;

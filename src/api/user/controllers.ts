@@ -1,6 +1,6 @@
 import { COL, STATUS_MSG } from '../../constants/const';
 import { NextFunction, Response } from 'express';
-import { createUser, doesUserAlreadyExistService, updateUser } from './service'
+import { grantAccessService, doesUserAlreadyExistService, updateUser, fetchAccess } from './service'
 import sendOTPbySMS from '../../helpers/otp_helpers/sendOTPbySMS';
 import queryArangoKVStore from '../../helpers/arango_helpers/queryArangoKVStore';
 import generateJWTToken from '../../helpers/JWT/generateJWTToken';
@@ -82,14 +82,36 @@ export const grantAccess = async (
 ): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const { phone, name } = req.body;
+        const { roomId, roles } = req.body;
+        const userId = req.user.id;
 
-        const grantedAccess = await createUser(arangodb,{phone,name});
+        await grantAccessService(arangodb, roomId, userId, roles);
+
+        res.send({
+            status: 200,
+            data: "Successfully granted access",
+            message: STATUS_MSG.UPDATE
+        });
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const fetchUserAccess = async (
+    req: any,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        const { arangodb } = req.app.locals;
+        const userId = req.user.id;
+
+        const grantedAccess = await fetchAccess(arangodb,userId);
 
         if (!grantedAccess) throw new Error('Something Went Wrong!');
         res.send({
             status: 200,
-            data: "Successfully granted access",
+            data: grantAccess,
             message: STATUS_MSG.FIND
         });
     } catch (e) {

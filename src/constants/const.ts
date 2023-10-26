@@ -20,6 +20,7 @@ export const EDGE_COL = {
     room: 'test_room',
     audio: 'test_audio',
     circle: 'test_circle',
+    userRole: 'test_user_room_role_relation',
 };
 
 export const INFO_META = {

@@ -6,10 +6,9 @@ import {
     initialBuilderState,
     update,
     create,
-    exists
 } from '../../helpers/arango_helpers/dymamicArangoQuery';
 import queryArangoDB from '../../helpers/arango_helpers/queryArangoDB';
-import { COL } from '../../constants/const';
+import { COL, EDGE_COL } from '../../constants/const';
 import { Database } from 'arangojs';
 
 
@@ -37,25 +36,97 @@ export const doesUserAlreadyExistService = async (
     return data && data?.length ? data[0] : null;
 }
 
-export const createUser = async (
+export const grantAccessService = async (
     arangodb: Database,
-    body: any,
+    userId: any,
+    roomId: string,
+    roles: string[],
+): Promise<any> => {
+    let builder = build(
+        filter(
+            forIn(initialBuilderState, EDGE_COL.userRole, 'edge'),
+            'edge._from == @_from && edge._to == @_to'),
+    );
+
+    let finalQuery = {
+        query: builder.query,
+        bindVars: {
+            ...builder.bindVars,
+            _from: userId,
+            _to: roomId,
+        }
+    };
+
+    const { data } = await queryArangoDB(arangodb, finalQuery);
+    if (!data?.length) {
+        builder = build(
+            returnExpr(
+                create(initialBuilderState, EDGE_COL.userRole),
+                'NEW'
+            )
+        );
+        const bindVars = {
+            ...builder.bindVars,
+            _from: userId,
+            _to: roomId,
+            roles: roles
+        };
+
+        finalQuery = {
+            query: builder.query,
+            bindVars: bindVars,
+        };
+    } else {
+        const relationKey = data[0]._key;
+        const builder = build(
+            returnExpr(
+                update(
+                    initialBuilderState,
+                    '@userRoomRelationId',
+                    EDGE_COL.userRole,
+                    '@body'
+                ),
+                'NEW'
+            )
+        );
+        const bindVars = {
+            ...builder.bindVars,
+            _from: userId,
+            _to: roomId,
+            roles: roles,
+            userRoomRelationId: relationKey,
+        };
+        finalQuery = {
+            query: builder.query,
+            bindVars: bindVars,
+        };
+    }
+    await queryArangoDB(arangodb, finalQuery);
+    return
+}
+
+export const fetchAccess = async (
+    arangodb: Database,
+    userId: any,
 ): Promise<any> => {
     const builder = build(
         returnExpr(
-            create(initialBuilderState, COL.users),
-            'NEW'
+            filter(
+                forIn(initialBuilderState, EDGE_COL.userRole, 'relationData'),
+                `relationData._from == @userId`
+            ),
+            'relationData'
         )
     );
     const finalQuery = {
         query: builder.query,
-        bindVars: { ...builder.bindVars, body: body }
+        bindVars: { ...builder.bindVars, userId }
     };
     const { data } = await queryArangoDB(arangodb, finalQuery);
     if (!data?.length) {
-        throw new Error('Unable to create user');
+        throw new Error('Unable to fetch user access');
     }
-    return data[0]
+    return data[0].roles
 }
 
 export const updateUser = async (
