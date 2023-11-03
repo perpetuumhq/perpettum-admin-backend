@@ -15,6 +15,19 @@ export const forIn = (builder: QueryBuilder, collection: string, alias: string):
     query: [...builder.query, `FOR ${alias} IN ${collection}`],
 });
 
+export const mergeExpr = (builder: QueryBuilder, expression: ExpressionInput): QueryBuilder => ({
+    ...builder,
+    query: [...builder.query, `${typeof expression === 'function' ? (expression as () => string)() : expression}`],
+});
+
+export const limitExpr = (builder: QueryBuilder, offset: string, limit: string) => ({
+    ...builder,
+    query: [
+        ...builder.query,
+        `LIMIT ${offset}, ${limit}`
+    ],
+})
+
 export const filter = (builder: QueryBuilder, condition: string): QueryBuilder => ({
     ...builder,
     query: [...builder.query, `FILTER ${condition}`],
@@ -68,6 +81,11 @@ export const update = (builder: QueryBuilder, alias: string, collection: string,
 export const create = (builder: QueryBuilder, collection: string): QueryBuilder => ({
     ...builder,
     query: [...builder.query, `INSERT @body INTO ${collection}`],
+});
+
+export const bulkCreate = (builder: QueryBuilder, bulkData: string,collection: string): QueryBuilder => ({
+    ...builder,
+    query: [...builder.query, `FOR data IN ${bulkData} INSERT data INTO ${collection}`],
 });
 
 export const remove = (builder: QueryBuilder, alias: string, collection: string): QueryBuilder => ({

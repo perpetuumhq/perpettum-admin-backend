@@ -6,6 +6,7 @@ export const COL = {
     topics: 'test_topics',
     prompts: 'test_prompts',
     bumps: 'test_bumps',
+    campus: 'test_campus',
     reactions: 'test_reactions',
     relations: 'test_relations',
     nudges: 'test_nudges',
@@ -15,12 +16,14 @@ export const COL = {
     feedback: 'test_feedback',
     invite: 'test_invite',
     notificationTemplates: 'test_notificationTemplates',
+    representatives: 'test_representatives',
 };
 export const EDGE_COL = {
     room: 'test_room',
     audio: 'test_audio',
     circle: 'test_circle',
     userRole: 'test_user_room_role_relation',
+    campusRepresentative: 'test_campus_representative',
 };
 
 export const INFO_META = {
