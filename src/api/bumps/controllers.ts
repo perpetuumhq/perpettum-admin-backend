@@ -99,8 +99,9 @@ export const fetchCampus = async (
     try {
         const { arangodb } = req.app.locals;
         const userId = req.user.id;
+        const distances = req.query.distance.split(',').map(Number); // Convert string to array of numbers
 
-        const campusData = await service.fetchCampusService(arangodb, userId);
+        const campusData = await service.fetchCampusService(arangodb, userId,distances);
 
         res.send({
             status: 200,

@@ -98,9 +98,19 @@ export const deleteBumps = async (
 export const fetchCampusService = async (
     arangodb: Database,
     userKey: string,
+    distances: any[],
 ): Promise<any> => {
-    const  query = `LET campusRepresentativesEdges = (FOR edge IN test_campus_representative FILTER edge._to == @userId RETURN edge._from) LET campusRep = (FOR edge IN test_campus FILTER edge._to == @userId RETURN edge._from)
-    LET nearby5KmCampuses = (FOR campusId IN campusRepresentativesEdges LET repCampus = (FOR campus IN test_campus FILTER campus._id == campusId RETURN campus)FOR campus IN test_campus LET distance = DISTANCE(campus.location.latitude, campus.location.longitude, repCampus.location.latitude, repCampus.location.longitude) FILTER distance <= 5  and campus._id != campusId RETURN campus)  LET nearby10KmCampuses = (FOR campusId IN campusRepresentativesEdges LET repCampus = (FOR campus IN test_campus FILTER campus._id == campusId RETURN campus)FOR campus IN test_campus LET distance = DISTANCE(campus.location.latitude, campus.location.longitude, repCampus.location.latitude, repCampus.location.longitude) FILTER distance <= 10 and distance>5 and campus._id != campusId RETURN campus) RETURN { nearby5KmCampuses: nearby5KmCampuses,nearby10KmCampuses:nearby10KmCampuses }`
+    console.log(distances,"distances")
+    let  query = `LET campusRepresentativesEdges = (FOR edge IN test_campus_representative FILTER edge._to == @userId RETURN edge._from) LET campusRep = (FOR edge IN test_campus FILTER edge._to == @userId RETURN edge._from)`
+    for (let i = 0; i < distances.length; i++) {
+        const distance = distances[i];
+        const upperLimit = distances[i - 1] || 0;
+        const variableName = `nearby${distance}KmCampuses`;
+        query += `
+            LET ${variableName} = ( FOR campusId IN campusRepresentativesEdges  LET repCampus = ( FOR campus IN test_campus FILTER campus._id == campusId RETURN campus )[0] FOR campus IN test_campus  LET calculatedDistance = DISTANCE(campus.location.latitude, campus.location.longitude, repCampus.location.latitude, repCampus.location.longitude)FILTER calculatedDistance < ${distance} AND calculatedDistance >= ${upperLimit} AND campus._id != campusId RETURN campus )`;
+    }
+    query += `RETURN { ${distances.map(distance => `nearby${distance}KmCampuses`).join(', ')} }`;
+
     const userId = "test_representatives/"+userKey;
 
     let finalQuery = {
