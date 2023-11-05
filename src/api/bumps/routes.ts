@@ -5,7 +5,8 @@ import {
     deleteBumps,
     getAllBumps,
     updateBump,
-    uploadBumpImage
+    uploadBumpImage,
+    fetchCampus
 } from './controllers';
 import { upload } from '../../middlewares/uploadRoomFile';
 
@@ -21,5 +22,6 @@ router.put("/file", upload.single('file'), uploadBumpImage);
 
 router.put("/delete", deleteBumps);
 
+router.get("/fetch-campus", fetchCampus);
 
 export default router;

@@ -8,7 +8,10 @@ import localToUTC from '../../helpers/timeZone_helper/localToUTC';
 
 export const getAllBumps = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     const { arangodb } = req.app.locals;
-    const { data } = await service.allBumps(arangodb);
+    const prevPage = req.query.prevPage !== undefined ? req.query.prevPage : 0;
+    const limit = Number(req.query.limit) || 10;
+    const { data } = await service.allBumps(arangodb,prevPage,limit);
+    
     res.send({
         status: 200,
         data: manageOutput(data),
@@ -87,3 +90,24 @@ export const deleteBumps = async (req: any, res: Response, next: NextFunction): 
         next(e);
     }
 }
+
+export const fetchCampus = async (
+    req: any,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        const { arangodb } = req.app.locals;
+        const userId = req.user.id;
+
+        const campusData = await service.fetchCampusService(arangodb, userId);
+
+        res.send({
+            status: 200,
+            data: campusData,
+            message: STATUS_MSG.FIND_ONE
+        });
+    } catch (e) {
+        next(e);
+    }
+};

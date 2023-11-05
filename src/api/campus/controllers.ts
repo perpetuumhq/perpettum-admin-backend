@@ -10,7 +10,7 @@ export const updateCampus = async (
 ): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const userId = 1;
+        const userId = req.user.id;
         const body = req.body;
         body["updatedBy"]= userId
         const campusCreated = await updateCampusService(arangodb,body);
@@ -52,7 +52,7 @@ export const createCampus = async (
 ): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const userId = 1;
+        const userId = req.user.id;
         const body = req.body;
         body["createdBy"]= userId
         const campusCreated = await createCampusService(arangodb,body);
