@@ -4,9 +4,10 @@ import {
     createBump,
     deleteBumps,
     getAllBumps,
+    getMyBumps,
     updateBump,
     uploadBumpImage,
-    fetchCampus
+    fetchCampus,
 } from './controllers';
 import { upload } from '../../middlewares/uploadRoomFile';
 
@@ -23,5 +24,7 @@ router.put("/file", upload.single('file'), uploadBumpImage);
 router.put("/delete", deleteBumps);
 
 router.get("/fetch-campus", fetchCampus);
+
+router.get("/my-bumps", getMyBumps);
 
 export default router;

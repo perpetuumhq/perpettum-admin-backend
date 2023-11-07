@@ -1,12 +1,12 @@
 import { Database } from "arangojs";
 import { COL, EDGE_COL } from "../../constants/const";
-import { build, create, filterGroup, forIn, initialBuilderState, remove, returnExpr, update,limitExpr, filter } from "../../helpers/arango_helpers/dymamicArangoQuery";
+import { build, create, filterGroup, forIn, initialBuilderState, remove, returnExpr, update, limitExpr, filter } from "../../helpers/arango_helpers/dymamicArangoQuery";
 import queryArangoDB from "../../helpers/arango_helpers/queryArangoDB";
 
 export const allBumps = async (
     arangodb: Database,
     prevPage: string,
-    limit:any
+    limit: any
 ): Promise<any> => {
     const builder = build(
         returnExpr(
@@ -14,7 +14,7 @@ export const allBumps = async (
                 forIn(initialBuilderState, COL.bumps, 'bump'),
                 prevPage,
                 limit),
-                'bump'
+            'bump'
         )
 
     );
@@ -22,6 +22,35 @@ export const allBumps = async (
         query: builder.query,
         bindVars: {
             ...builder.bindVars,
+        }
+    };
+    const { data, count } = await queryArangoDB(arangodb, finalQuery);
+    return { data, count };
+}
+
+export const allMyBumps = async (
+    arangodb: Database,
+    userId: string,
+    prevPage: string,
+    limit: any
+): Promise<any> => {
+    const builder = build(
+        returnExpr(
+            filter(
+                limitExpr(
+                    forIn(initialBuilderState, COL.bumps, 'bump'),
+                    prevPage,
+                    limit),
+                'bump'),
+            "bump.createdBy == @userId"
+        )
+
+    );
+    const finalQuery = {
+        query: builder.query,
+        bindVars: {
+            ...builder.bindVars,
+            userId,
         }
     };
     const { data, count } = await queryArangoDB(arangodb, finalQuery);
@@ -100,8 +129,7 @@ export const fetchCampusService = async (
     userKey: string,
     distances: any[],
 ): Promise<any> => {
-    console.log(distances,"distances")
-    let  query = `LET campusRepresentativesEdges = (FOR edge IN test_campus_representative FILTER edge._to == @userId RETURN edge._from) LET campusRep = (FOR edge IN test_campus FILTER edge._to == @userId RETURN edge._from)`
+    let query = `LET campusRepresentativesEdges = (FOR edge IN test_campus_representative FILTER edge._to == @userId RETURN edge._from) LET campusRep = (FOR edge IN test_campus FILTER edge._to == @userId RETURN edge._from)`
     for (let i = 0; i < distances.length; i++) {
         const distance = distances[i];
         const upperLimit = distances[i - 1] || 0;
@@ -111,7 +139,7 @@ export const fetchCampusService = async (
     }
     query += `RETURN { ${distances.map(distance => `nearby${distance}KmCampuses`).join(', ')} }`;
 
-    const userId = "test_representatives/"+userKey;
+    const userId = "test_representatives/" + userKey;
 
     let finalQuery = {
         query: query,

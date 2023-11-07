@@ -3,7 +3,8 @@ import {
     fetchAllCampus,
     updateCampus,
     fetchCampus,
-    createCampus
+    createCampus,
+    unlinkRep,
 } from './controllers';
 import staticSchemaValidation from '../../middlewares/staticSchemaValidation';
 import {
@@ -33,5 +34,10 @@ router.get(
 router.post(
     '/create',
     createCampus
+);
+
+router.post(
+    '/unlink',
+    unlinkRep,
 );
 export default router;

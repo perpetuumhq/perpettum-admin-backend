@@ -9,6 +9,7 @@ import {
     bulkCreate,
     mergeExpr,
     limitExpr,
+    remove,
 } from '../../helpers/arango_helpers/dymamicArangoQuery';
 import queryArangoDB from '../../helpers/arango_helpers/queryArangoDB';
 import { COL, EDGE_COL } from '../../constants/const';
@@ -131,7 +132,6 @@ export const createCampusService = async (
     if (!campusRepresentativeRelation.data?.length) {
         throw new Error('Unable to add representatives');
     }
-    console.log(campusId)
     return campusRepresentativeRelation.data[0]
 }
 
@@ -195,4 +195,32 @@ export const updateCampusService = async (
         throw new Error('Unable to add representatives');
     }
     return campusRepresentativeRelation.data[0]
+}
+
+export const removeRep = async (
+    arangodb: Database,
+    repId: any,
+): Promise<any> => {
+    let builder = build(
+        remove(
+            filter(
+                forIn(initialBuilderState, EDGE_COL.campusRepresentative, 'campusRepresentative'),
+                `campusRepresentative._to == @repId`
+            ),
+            'campusRepresentative',
+            EDGE_COL.campusRepresentative
+        )
+    );
+
+    const representativesQuery = {
+        query: builder.query,
+        bindVars: { ...builder.bindVars, repId: repId }
+    };
+
+    const { data } = await queryArangoDB(arangodb, representativesQuery);
+
+    if (!data?.length) {
+        throw new Error('Unable to delete representatives');
+    }
+    return
 }

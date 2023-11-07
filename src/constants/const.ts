@@ -14,6 +14,7 @@ export const COL = {
     calls: 'test_calls',
     notification: 'test_notification',
     feedback: 'test_feedback',
+    catalogues: 'test_catalogue',
     invite: 'test_invite',
     notificationTemplates: 'test_notificationTemplates',
     representatives: 'test_representatives',

@@ -19,6 +19,20 @@ export const getAllBumps = async (req: any, res: Response, next: NextFunction): 
     });
 }
 
+export const getMyBumps = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    const { arangodb } = req.app.locals;
+    const userId = req.user.id;
+    const prevPage = req.query.prevPage !== undefined ? req.query.prevPage : 0;
+    const limit = Number(req.query.limit) || 10;
+    const { data } = await service.allMyBumps(arangodb,userId,prevPage,limit);
+    
+    res.send({
+        status: 200,
+        data: manageOutput(data),
+        message: STATUS_MSG.FIND
+    });
+}
+
 export const uploadBumpImage = async (
     req: any,
     res: Response,

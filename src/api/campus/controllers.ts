@@ -1,6 +1,6 @@
 import { COL, STATUS_MSG } from '../../constants/const';
 import { NextFunction, Response } from 'express';
-import { fetchCampusService, fetchAllCampusService, updateCampusService, createCampusService } from './service'
+import { fetchCampusService, fetchAllCampusService, updateCampusService, createCampusService, removeRep } from './service'
 
 
 export const updateCampus = async (
@@ -82,6 +82,25 @@ export const fetchAllCampus = async (
             status: 200,
             data: campusData,
             message: STATUS_MSG.FIND_ONE
+        });
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const unlinkRep = async (
+    req: any,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        const { arangodb } = req.app.locals;
+        const { repId } = req.body;
+        await removeRep(arangodb, repId);
+
+        res.send({
+            status: 200,
+            message: STATUS_MSG.DELETE
         });
     } catch (e) {
         next(e);
