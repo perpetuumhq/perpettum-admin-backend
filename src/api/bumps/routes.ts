@@ -27,10 +27,10 @@ router.put("/delete", deleteBumps);
 
 router.get("/fetch-campus", auth, fetchCampus);
 
-router.get("/my-bumps",  auth,getMyBumps);
+router.get("/my-bumps",  auth,auth,getMyBumps);
 
-router.get("/rep-bumps", repCreatedBumps);
+router.get("/rep-bumps", auth,repCreatedBumps);
 
-router.put("/bump-status", bumpStatus);
+router.put("/bump-status", auth,bumpStatus);
 
 export default router;
