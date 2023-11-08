@@ -75,5 +75,5 @@ export const fetchCatalogues = async (
     if (!data?.length) {
         throw new Error('Unable to fetch catalogues');
     }
-    return data[0]
+    return data
 }

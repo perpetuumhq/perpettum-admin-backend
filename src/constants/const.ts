@@ -1,12 +1,12 @@
 export const COL = {
     info: 'test_info',
     otps: 'test_otps',
-    users: 'test_users',
+    users: 'test_admin_users',
     userData: 'test_userData',
     topics: 'test_topics',
     prompts: 'test_prompts',
     bumps: 'test_bumps',
-    campus: 'test_campus',
+    campus: 'test_admin_campus',
     reactions: 'test_reactions',
     relations: 'test_relations',
     nudges: 'test_nudges',
@@ -14,17 +14,17 @@ export const COL = {
     calls: 'test_calls',
     notification: 'test_notification',
     feedback: 'test_feedback',
-    catalogues: 'test_catalogue',
+    catalogues: 'test_admin_catalogue',
     invite: 'test_invite',
     notificationTemplates: 'test_notificationTemplates',
-    representatives: 'test_representatives',
 };
 export const EDGE_COL = {
     room: 'test_room',
     audio: 'test_audio',
     circle: 'test_circle',
     userRole: 'test_user_room_role_relation',
-    campusRepresentative: 'test_campus_representative',
+    campusRepresentative: 'test_admin_campus_representative',
+    adminRep: 'test_admin_rep',
 };
 
 export const INFO_META = {
@@ -120,3 +120,17 @@ export const NOTIFICATION_TYPE = {
 }
 
 export const TIME_ZONE = 'Asia/Kolkata';
+
+export enum BUMP_STATUS {
+    SUBMITTED = 0,
+    DRAFT = 0,
+    LIVE = 1,
+    SCHEDULED = 1,
+    REJECTED = 2,
+    COMPLETED = 3
+}
+
+export enum BUMP_APPROVAL{
+    ACCEPTED = 1,
+    REJECTED = 0
+}

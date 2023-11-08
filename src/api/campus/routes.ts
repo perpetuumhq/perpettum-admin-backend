@@ -18,26 +18,32 @@ const router = express.Router();
 
 router.get(
     '/fetch-all',
+    auth,
     fetchAllCampus
 );
 
 router.put(
     '/update',
+    auth,
     updateCampus
 );
 
 router.get(
     '/fetch',
+    auth,
     fetchCampus
 );
 
 router.post(
     '/create',
+    auth,
     createCampus
 );
 
 router.post(
     '/unlink',
+    auth,
     unlinkRep,
 );
+
 export default router;

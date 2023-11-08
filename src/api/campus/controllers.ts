@@ -10,14 +10,14 @@ export const updateCampus = async (
 ): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const userId = req.user.id;
+        const userId = 1;
         const body = req.body;
-        body["updatedBy"]= userId
-        const campusCreated = await updateCampusService(arangodb,body);
+        body["updatedBy"] = userId
+        const campusCreated = await updateCampusService(arangodb, body);
         if (!campusCreated) throw new Error('Something Went Wrong!');
         res.send({
             status: 200,
-            message: STATUS_MSG.CREATE
+            message: STATUS_MSG.UPDATE
         });
     } catch (e) {
         next(e);
@@ -31,7 +31,7 @@ export const fetchCampus = async (
 ): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const { campusId} = req.query;
+        const { campusId } = req.query;
 
         const campusData = await fetchCampusService(arangodb, campusId);
 
@@ -52,10 +52,10 @@ export const createCampus = async (
 ): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const userId = req.user.id;
+        const userId = 1;
         const body = req.body;
-        body["createdBy"]= userId
-        const campusCreated = await createCampusService(arangodb,body);
+        body["createdBy"] = userId
+        const campusCreated = await createCampusService(arangodb, body);
         if (!campusCreated) throw new Error('Something Went Wrong!');
         res.send({
             status: 200,
@@ -75,8 +75,8 @@ export const fetchAllCampus = async (
         const { arangodb } = req.app.locals;
         const prevPage = req.query.prevPage !== undefined ? req.query.prevPage : 0;
         const limit = Number(req.query.limit) || 10;
-
-        const campusData = await fetchAllCampusService(arangodb, prevPage,limit);
+        const campusName = req.query.campusName !== undefined ? req.query.campusName : "";
+        const campusData = await fetchAllCampusService(arangodb,campusName, prevPage, limit);
 
         res.send({
             status: 200,

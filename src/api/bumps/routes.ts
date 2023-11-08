@@ -8,6 +8,8 @@ import {
     updateBump,
     uploadBumpImage,
     fetchCampus,
+    bumpStatus,
+    repCreatedBumps
 } from './controllers';
 import { upload } from '../../middlewares/uploadRoomFile';
 
@@ -23,8 +25,12 @@ router.put("/file", upload.single('file'), uploadBumpImage);
 
 router.put("/delete", deleteBumps);
 
-router.get("/fetch-campus", fetchCampus);
+router.get("/fetch-campus", auth, fetchCampus);
 
-router.get("/my-bumps", getMyBumps);
+router.get("/my-bumps",  auth,getMyBumps);
+
+router.get("/rep-bumps", repCreatedBumps);
+
+router.put("/bump-status", bumpStatus);
 
 export default router;

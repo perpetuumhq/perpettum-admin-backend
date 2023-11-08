@@ -1,21 +1,22 @@
 import { Database } from "arangojs";
-import { build, checkKeysInFieldsDynamic, create, filter, forIn, initialBuilderState, joinMultiple, remove, returnExpr, update } from "../../helpers/arango_helpers/dymamicArangoQuery";
+import { wordMatch, build, checkKeysInFieldsDynamic, create, filter, forIn, initialBuilderState, joinMultiple, remove, returnExpr, update } from "../../helpers/arango_helpers/dymamicArangoQuery";
 import { COL } from "../../constants/const";
 import queryArangoDB from "../../helpers/arango_helpers/queryArangoDB";
 
 
 export const allTopics = async (
     arangodb: Database,
-    active = null
+    active = null,
+    topicName: string,
 ): Promise<any> => {
     // in active variable, can pass null or true/false, if not null ,then will filter by active
     const builder = build(
         returnExpr(
             joinMultiple(
-                active !== null ? filter(
+                active !== null ? wordMatch(filter(
                     forIn(initialBuilderState, COL.topics, 'topic'),
-                    `topic.isActive == @active`
-                ) : forIn(initialBuilderState, COL.topics, 'topic'),
+                    `topic.isActive == @active` 
+                ),'topic.name',topicName) : wordMatch(forIn(initialBuilderState, COL.topics, 'topic'),'topic.name',topicName),
                 'topic',
                 [
                     { fieldName: 'relatedTopics', targetCollection: COL.topics, joinType: 'manyToMany' },

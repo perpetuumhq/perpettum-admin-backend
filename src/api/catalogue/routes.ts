@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.get("/fetch-catalogue", fetchCatalogues);
 
-router.post("create-catalogue", createCatalogues)
+router.post("/create-catalogue", createCatalogues)
 
-router.put("update-catalogue", updateCatalogues)
+router.put("/update-catalogue", updateCatalogues)
 export default router;

@@ -93,6 +93,11 @@ export const remove = (builder: QueryBuilder, alias: string, collection: string)
     query: [...builder.query, `REMOVE ${alias} IN ${collection}`],
 });
 
+export const wordMatch = (builder: QueryBuilder, field: string, text: string): QueryBuilder => ({
+    ...builder,
+    query: [...builder.query, `FILTER ANALYZER(${field} LIKE CONCAT("${text}", '%'), 'textAnalyzer')`],
+});
+
 export const forMultipleJoin = (
     builder: QueryBuilder,
     initialCollection: string,

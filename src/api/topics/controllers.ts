@@ -8,8 +8,8 @@ import { STORAGE_FOLDER, STORAGE_URL } from '../../config/config';
 export const allTopics = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const { active } = req.query;
-        const { data, count } = await service.allTopics(arangodb, active);
+        const { active, topicName } = req.query;
+        const { data, count } = await service.allTopics(arangodb, active,topicName);
 
         res.send({
             status: 200,

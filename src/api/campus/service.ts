@@ -17,6 +17,7 @@ import { Database } from 'arangojs';
 
 export const fetchAllCampusService = async (
     arangodb: Database,
+    campusName:string,
     prevPage: string, limit: any
 ): Promise<any> => {
     const builder = build(
@@ -25,7 +26,7 @@ export const fetchAllCampusService = async (
                 forIn(initialBuilderState, COL.campus, 'campus'),
                 prevPage,
                 limit),
-            () => ` LET campusRepresentativesEdges = ( FOR edge IN ${EDGE_COL.campusRepresentative} FILTER edge._from == campus._id RETURN edge._to ) LET verifiedCount = LENGTH(FOR representativeId IN  campusRepresentativesEdges FOR representative IN ${COL.representatives} FILTER representative._id == representativeId && representative.verified == true RETURN 1 ) LET unverifiedCount = LENGTH( FOR representativeId IN campusRepresentativesEdges FOR representative IN ${COL.representatives} FILTER representative._id == representativeId && representative.verified != true RETURN 1 ) RETURN {campus: { collegeName:campus.name, displayName:campus.displayName, status:campus.status}, verifiedCount: verifiedCount,unverifiedCount: unverifiedCount}`
+            () => `FILTER ANALYZER(campus.campusName LIKE CONCAT("${campusName}", '%'), 'textAnalyzer') LET campusRepresentativesEdges = ( FOR edge IN ${EDGE_COL.campusRepresentative} FILTER edge._from == campus._id RETURN edge._to ) LET verifiedCount = LENGTH(FOR representativeId IN  campusRepresentativesEdges FOR representative IN ${COL.users} FILTER representative._id == representativeId && representative.verified == true RETURN 1 ) LET unverifiedCount = LENGTH( FOR representativeId IN campusRepresentativesEdges FOR representative IN ${COL.users} FILTER representative._id == representativeId && representative.verified != true RETURN 1 ) RETURN {campus: { collegeName:campus.campusName, displayName:campus.displayName, status:campus.status}, verifiedCount: verifiedCount,unverifiedCount: unverifiedCount}`
         )
     );
     let finalQuery = {
@@ -34,7 +35,6 @@ export const fetchAllCampusService = async (
             ...builder.bindVars,
         }
     };
-    console.log(finalQuery)
     const { data } = await queryArangoDB(arangodb, finalQuery);
 
     if (!data?.length) {
@@ -42,7 +42,6 @@ export const fetchAllCampusService = async (
     }
     return data
 }
-
 
 export const fetchCampusService = async (
     arangodb: Database,
@@ -54,7 +53,7 @@ export const fetchCampusService = async (
                 forIn(initialBuilderState, COL.campus, 'campus'),
                 'campus._key == @campusId'
             ),
-            () => ` LET campusRepresentativesEdges = ( FOR edge IN test_campus_representative FILTER edge._from == campus._id RETURN edge._to ) LET representatives = ( FOR representativeId IN campusRepresentativesEdges FOR representative IN test_representatives FILTER representative._id == representativeId RETURN representative )RETURN {campus: campus,representatives: representatives}`
+            () => ` LET campusRepresentativesEdges = ( FOR edge IN ${EDGE_COL.campusRepresentative} FILTER edge._from == campus._id RETURN edge._to ) LET representatives = ( FOR representativeId IN campusRepresentativesEdges FOR representative IN ${COL.users} FILTER representative._id == representativeId RETURN representative )RETURN {campus: campus,representatives: representatives}`
         )
     );
     let finalQuery = {
@@ -76,10 +75,29 @@ export const createCampusService = async (
     arangodb: Database,
     requestBody: any,
 ): Promise<any> => {
-    const { representatives, ...body } = requestBody;
     let builder = build(
         returnExpr(
-            bulkCreate(initialBuilderState, "@representatives", COL.representatives),
+            filter(
+                forIn(initialBuilderState, COL.campus, 'campus'),
+                `campus.displayName == @displayName OR campus.campusName == @campusName `
+            ),
+            'campus'
+        )
+    );
+    const campusQuery = {
+        query: builder.query,
+        bindVars: { ...builder.bindVars, displayName: requestBody["displayName"], campusName: requestBody["campusName"] }
+    };
+
+    const campusData = await queryArangoDB(arangodb, campusQuery);
+    if (campusData.data?.length) {
+        throw new Error('Campus already exists');
+    }
+
+    const { representatives, ...body } = requestBody;
+    builder = build(
+        returnExpr(
+            bulkCreate(initialBuilderState, "@representatives", COL.users),
             'NEW._id'
         )
     );
@@ -111,10 +129,33 @@ export const createCampusService = async (
         throw new Error('Unable to create campus');
     }
     const campusId = campusResponse.data[0];
+
+    const adminRep = representativesId.map((representativeId: string) => {
+        return {
+            _from: "test_admin_users/"+requestBody["createdBy"],
+            _to: representativeId,
+        };
+    });
+    builder = build(
+        returnExpr(
+            bulkCreate(initialBuilderState, "@adminRep", EDGE_COL.adminRep),
+            'NEW._id'
+        )
+    );
+
+    const adminRepQuery = {
+        query: builder.query,
+        bindVars: { ...builder.bindVars, adminRep: adminRep }
+    };
+    const adminRepRelation = await queryArangoDB(arangodb, adminRepQuery);
+    if (!adminRepRelation.data?.length) {
+        throw new Error('Unable to add representatives');
+    }
+
     const edgeDocuments = representativesId.map((representativeId: string) => {
         return {
-            _from: campusId, // Replace 'yourCampusCollection' with your actual collection name
-            _to: representativeId, // Replace 'yourRepresentativesCollection' with your actual collection name
+            _from: campusId,
+            _to: representativeId,
         };
     });
     builder = build(
@@ -142,7 +183,7 @@ export const updateCampusService = async (
     const { representatives, campusKey, ...body } = requestBody;
     let builder = build(
         returnExpr(
-            bulkCreate(initialBuilderState, "@representatives", COL.representatives),
+            bulkCreate(initialBuilderState, "@representatives", COL.users),
             'NEW._id'
         )
     );
@@ -202,13 +243,16 @@ export const removeRep = async (
     repId: any,
 ): Promise<any> => {
     let builder = build(
-        remove(
-            filter(
-                forIn(initialBuilderState, EDGE_COL.campusRepresentative, 'campusRepresentative'),
-                `campusRepresentative._to == @repId`
+        returnExpr(
+            remove(
+                filter(
+                    forIn(initialBuilderState, EDGE_COL.campusRepresentative, 'campusRepresentative'),
+                    `campusRepresentative._to == @repId`
+                ),
+                'campusRepresentative',
+                EDGE_COL.campusRepresentative
             ),
-            'campusRepresentative',
-            EDGE_COL.campusRepresentative
+            "OLD"
         )
     );
 
@@ -216,11 +260,33 @@ export const removeRep = async (
         query: builder.query,
         bindVars: { ...builder.bindVars, repId: repId }
     };
-
     const { data } = await queryArangoDB(arangodb, representativesQuery);
 
     if (!data?.length) {
         throw new Error('Unable to delete representatives');
+    }
+
+    builder = build(
+        returnExpr(
+            remove(
+                filter(
+                    forIn(initialBuilderState, COL.users, 'representatives'),
+                    `representatives._id == @repId`
+                ),
+                'representatives',
+                COL.users
+            ), "OLD")
+    );
+
+    const representativesRemovalQuery = {
+        query: builder.query,
+        bindVars: { ...builder.bindVars, repId: repId }
+    };
+
+    const representativesRemovalData = await queryArangoDB(arangodb, representativesRemovalQuery);
+
+    if (!representativesRemovalData.data?.length) {
+        throw new Error('Unable to remove representative data');
     }
     return
 }

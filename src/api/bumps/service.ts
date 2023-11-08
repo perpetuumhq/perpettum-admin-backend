@@ -32,17 +32,19 @@ export const allMyBumps = async (
     arangodb: Database,
     userId: string,
     prevPage: string,
-    limit: any
+    limit: any,
+    bumpStatus: string
 ): Promise<any> => {
     const builder = build(
         returnExpr(
-            filter(
+            filter(filter(
                 limitExpr(
                     forIn(initialBuilderState, COL.bumps, 'bump'),
                     prevPage,
                     limit),
-                'bump'),
-            "bump.createdBy == @userId"
+                "bump.createdBy == @userId"), "bump.bumpStatus == @bumpStatus"),
+
+            'bump'
         )
 
     );
@@ -51,6 +53,29 @@ export const allMyBumps = async (
         bindVars: {
             ...builder.bindVars,
             userId,
+            bumpStatus,
+        }
+    };
+    const { data, count } = await queryArangoDB(arangodb, finalQuery);
+    return { data, count };
+}
+
+export const repCreatedBumps = async (
+    arangodb: Database,
+    userId: string,
+    prevPage: string,
+    limit: any,
+    bumpStatus: string
+): Promise<any> => {
+    let query = `LET reps = ( FOR edge IN ${EDGE_COL.adminRep}  FILTER edge._from == CONCAT('${COL.users}/', @userId) LET cleanId = SPLIT(edge._to, '/')[1] RETURN cleanId ) FOR bump IN test_admin_bumps LIMIT @prevPage, @limit FILTER bump.createdBy IN reps FILTER bump.bumpStatus == @bumpStatus RETURN bump`
+    userId = "test_admin_users/" + userId
+    const finalQuery = {
+        query: query,
+        bindVars: {
+            userId,
+            prevPage,
+            limit,
+            bumpStatus,
         }
     };
     const { data, count } = await queryArangoDB(arangodb, finalQuery);
@@ -75,6 +100,7 @@ export const createBump = async (
 export const updateBump = async (
     arangodb: Database,
     id: string,
+    userId: string,
     body: any,
 ): Promise<any> => {
     const builder = build(
@@ -127,30 +153,26 @@ export const deleteBumps = async (
 export const fetchCampusService = async (
     arangodb: Database,
     userKey: string,
-    distances: any[],
+    campusName: string,
+    prevPage: string,
+    limit: any
 ): Promise<any> => {
-    let query = `LET campusRepresentativesEdges = (FOR edge IN test_campus_representative FILTER edge._to == @userId RETURN edge._from) LET campusRep = (FOR edge IN test_campus FILTER edge._to == @userId RETURN edge._from)`
-    for (let i = 0; i < distances.length; i++) {
-        const distance = distances[i];
-        const upperLimit = distances[i - 1] || 0;
-        const variableName = `nearby${distance}KmCampuses`;
-        query += `
-            LET ${variableName} = ( FOR campusId IN campusRepresentativesEdges  LET repCampus = ( FOR campus IN test_campus FILTER campus._id == campusId RETURN campus )[0] FOR campus IN test_campus  LET calculatedDistance = DISTANCE(campus.location.latitude, campus.location.longitude, repCampus.location.latitude, repCampus.location.longitude)FILTER calculatedDistance < ${distance} AND calculatedDistance >= ${upperLimit} AND campus._id != campusId RETURN campus )`;
-    }
-    query += `RETURN { ${distances.map(distance => `nearby${distance}KmCampuses`).join(', ')} }`;
-
-    const userId = "test_representatives/" + userKey;
-
-    let finalQuery = {
+    const maxDistances = [5, 10, 20, 50, 100]
+    const userId = "test_admin_users/" + userKey;
+    const query = `LET campusId = ( FOR edge IN ${EDGE_COL.campusRepresentative} FILTER edge._to == @userId RETURN edge._from )[0] LET campusLocation = (  FOR campus IN ${COL.campus}  FILTER campus._id == campusId RETURN campus.location  )[0] LET maxDistances = @maxDistances  FOR campus IN ${COL.campus} FILTER ANALYZER(campus.campusName LIKE CONCAT("${campusName}", '%'), 'textAnalyzer') LIMIT @prevPage, @limit LET distance = DISTANCE(campusLocation.latitude, campusLocation.longitude, campus.location.latitude, campus.location.longitude) LET distanceCategory = ( FOR i IN 0..LENGTH(maxDistances) - 1 FILTER distance <= maxDistances[i] RETURN CONCAT('under',maxDistances[i], 'km')  )[0] || 'over100km' COLLECT category = distanceCategory INTO groupedCampuses  RETURN { distanceCategory: category, campuses:groupedCampuses }`
+    const finalQuery = {
         query: query,
         bindVars: {
             userId,
+            maxDistances,
+            prevPage,
+            limit,
         }
     };
     const { data } = await queryArangoDB(arangodb, finalQuery);
 
     if (!data?.length) {
-        throw new Error('Unable to fetch representatives');
+        throw new Error('Unable to fetch campus');
     }
-    return data[0]
+    return data
 }
