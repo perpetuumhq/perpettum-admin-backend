@@ -132,7 +132,7 @@ export const createCampusService = async (
 
     const adminRep = representativesId.map((representativeId: string) => {
         return {
-            _from: "test_admin_users/"+requestBody["createdBy"],
+            _from: `${COL.users}/`+requestBody["createdBy"],
             _to: representativeId,
         };
     });

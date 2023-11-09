@@ -67,8 +67,8 @@ export const repCreatedBumps = async (
     limit: any,
     bumpStatus: string
 ): Promise<any> => {
-    let query = `LET reps = ( FOR edge IN ${EDGE_COL.adminRep}  FILTER edge._from == CONCAT('${COL.users}/', @userId) LET cleanId = SPLIT(edge._to, '/')[1] RETURN cleanId ) FOR bump IN test_admin_bumps LIMIT @prevPage, @limit FILTER bump.createdBy IN reps FILTER bump.bumpStatus == @bumpStatus RETURN bump`
-    userId = "test_admin_users/" + userId
+    let query = `LET reps = ( FOR edge IN ${EDGE_COL.adminRep}  FILTER edge._from == CONCAT('${COL.users}/', @userId) LET cleanId = SPLIT(edge._to, '/')[1] RETURN cleanId ) FOR bump IN ${COL.bumps} LIMIT @prevPage, @limit FILTER bump.createdBy IN reps FILTER bump.bumpStatus == @bumpStatus RETURN bump`
+    userId = `${COL.users}/` + userId
     const finalQuery = {
         query: query,
         bindVars: {
@@ -158,7 +158,7 @@ export const fetchCampusService = async (
     limit: any
 ): Promise<any> => {
     const maxDistances = [5, 10, 20, 50, 100]
-    const userId = "test_admin_users/" + userKey;
+    const userId = `${COL.users}/` + userKey;
     const query = `LET campusId = ( FOR edge IN ${EDGE_COL.campusRepresentative} FILTER edge._to == @userId RETURN edge._from )[0] LET campusLocation = (  FOR campus IN ${COL.campus}  FILTER campus._id == campusId RETURN campus.location  )[0] LET maxDistances = @maxDistances  FOR campus IN ${COL.campus} FILTER ANALYZER(campus.campusName LIKE CONCAT("${campusName}", '%'), 'textAnalyzer') LIMIT @prevPage, @limit LET distance = DISTANCE(campusLocation.latitude, campusLocation.longitude, campus.location.latitude, campus.location.longitude) LET distanceCategory = ( FOR i IN 0..LENGTH(maxDistances) - 1 FILTER distance <= maxDistances[i] RETURN CONCAT('under',maxDistances[i], 'km')  )[0] || 'over100km' COLLECT category = distanceCategory INTO groupedCampuses  RETURN { distanceCategory: category, campuses:groupedCampuses }`
     const finalQuery = {
         query: query,
