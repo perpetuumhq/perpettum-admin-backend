@@ -26,11 +26,13 @@ export const getAllBumps = async (req: any, res: Response, next: NextFunction): 
 export const getMyBumps = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const bumpStatus = BUMP_STATUS[req.query.bumpStatus !== undefined ?req.query.bumpStatus.toUpperCase():"DRAFT"];
+        let bumpState: string | undefined = req.query.bumpState;
+        const action = bumpState ? bumpState.toUpperCase() as BUMP_APPROVAL : "DRAFT" as BUMP_APPROVAL;
+        bumpState = BUMP_APPROVAL[action];
         const userId = req.user.id;
         const prevPage = req.query.prevPage !== undefined ? req.query.prevPage : 0;
         const limit = Number(req.query.limit) || 10;
-        const { data } = await service.allMyBumps(arangodb, userId, prevPage, limit, bumpStatus);
+        const { data } = await service.allMyBumps(arangodb, userId, prevPage, limit, bumpState);
 
         res.send({
             status: 200,
@@ -46,11 +48,13 @@ export const repCreatedBumps = async (req: any, res: Response, next: NextFunctio
     try {
 
         const { arangodb } = req.app.locals;
-        const bumpStatus = req.query.bumpState;
+        let bumpState: string | undefined = req.query.bumpState;
+        const action = bumpState ? bumpState.toUpperCase() as BUMP_APPROVAL : "DRAFT" as BUMP_APPROVAL;
+        bumpState = BUMP_APPROVAL[action];
         const userId = req.user.id;
         const prevPage = req.query.prevPage !== undefined ? req.query.prevPage : 0;
         const limit = Number(req.query.limit) || 10;
-        const { data } = await service.repCreatedBumps(arangodb, userId, prevPage, limit, bumpStatus);
+        const { data } = await service.repCreatedBumps(arangodb, userId, prevPage, limit, bumpState);
         res.send({
             status: 200,
             data: manageOutput(data),
@@ -88,8 +92,11 @@ export const createBump = async (req: any, res: Response, next: NextFunction): P
             ...req.body,
             goLiveDate: localToUTC(req.body.goLiveDate, timeZone),
         }
-        const bumpStatus = modifiedBody["bumpState"] !== undefined ? modifiedBody["bumpState"].toUpperCase() : "DRAFT";
-        modifiedBody["bumpStatus"] = BUMP_STATUS[bumpStatus];
+        let bumpState: string | undefined = modifiedBody["bumpState"];
+        const action = bumpState ? bumpState.toUpperCase() as BUMP_APPROVAL : "DRAFT" as BUMP_APPROVAL;
+        bumpState = BUMP_APPROVAL[action];
+
+        modifiedBody["bumpState"] = bumpState;
         modifiedBody["createdBy"] =req.user.id;
         await service.createBump(arangodb, modifiedBody);
         res.send({
@@ -112,8 +119,10 @@ export const updateBump = async (req: any, res: Response, next: NextFunction): P
             ...req.body,
             goLiveDate: localToUTC(req.body.goLiveDate, timeZone),
         }
-        const bumpStatus = modifiedBody["bumpState"] !== undefined ? modifiedBody["bumpState"].toUpperCase() : "DRAFT";
-        modifiedBody["bumpStatus"] = BUMP_STATUS[bumpStatus];
+        let bumpState: string | undefined = modifiedBody["bumpState"];
+        const action = bumpState ? bumpState.toUpperCase() as BUMP_APPROVAL : "DRAFT" as BUMP_APPROVAL;
+        bumpState = BUMP_APPROVAL[action];
+        modifiedBody["bumpState"] = bumpState;
         await service.updateBump(arangodb, id, userId, modifiedBody);
         res.send({
             status: 200,
@@ -128,9 +137,12 @@ export const updateBump = async (req: any, res: Response, next: NextFunction): P
 export const bumpStatus = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const { id, action } = req.body;
+        const { id } = req.body;
         const userId = req.user.id;
-        await service.updateBump(arangodb, id, userId, { bumpApproval: action });
+        const action = req.body.action as BUMP_APPROVAL;
+        const approval = BUMP_APPROVAL[action];
+
+        await service.updateBump(arangodb, id, userId, { bumpApproval: approval });
         res.send({
             status: 200,
             data: 'Bump Updated!',

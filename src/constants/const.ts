@@ -122,15 +122,15 @@ export const NOTIFICATION_TYPE = {
 export const TIME_ZONE = 'Asia/Kolkata';
 
 export enum BUMP_STATUS {
-    SUBMITTED = 0,
-    DRAFT = 0,
-    LIVE = 1,
-    SCHEDULED = 1,
-    REJECTED = 2,
-    COMPLETED = 3
+    SUBMITTED = "SUBMITTED",
+    DRAFT = "DRAFT",
+    LIVE = 'LIVE',
+    SCHEDULED = "SCHEDULED",
+    REJECTED = "REJECTED",
+    COMPLETED = "COMPLETED"
 }
 
 export enum BUMP_APPROVAL{
-    ACCEPTED = 1,
-    REJECTED = 0
+    ACCEPTED = "ACCEPTED",
+    REJECTED = "REJECTED"
 }
