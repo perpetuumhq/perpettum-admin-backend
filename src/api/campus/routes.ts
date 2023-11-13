@@ -6,43 +6,38 @@ import {
     createCampus,
     unlinkRep,
 } from './controllers';
-import staticSchemaValidation from '../../middlewares/staticSchemaValidation';
-import {
-    phoneOtpSchema,
-    phoneOtpVerificationSchema,
-    grantAccessVerificationSchema
-} from './validations';
-import { auth } from '../../middlewares/auth';
+
+import { adminAuth } from '../../middlewares/auth';
 
 const router = express.Router();
 
 router.get(
     '/fetch-all',
-    auth,
+    adminAuth,
     fetchAllCampus
 );
 
 router.put(
     '/update',
-    auth,
+    adminAuth,
     updateCampus
 );
 
 router.get(
     '/fetch',
-    auth,
+    adminAuth,
     fetchCampus
 );
 
 router.post(
     '/create',
-    auth,
+    adminAuth,
     createCampus
 );
 
 router.post(
     '/unlink',
-    auth,
+    adminAuth,
     unlinkRep,
 );
 

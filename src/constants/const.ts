@@ -17,6 +17,7 @@ export const COL = {
     catalogues: 'test_admin_catalogue',
     invite: 'test_invite',
     notificationTemplates: 'test_notificationTemplates',
+    admin: 'test_admin_admins',
 };
 export const EDGE_COL = {
     room: 'test_room',

@@ -1,5 +1,5 @@
 import express from 'express';
-import { auth } from '../../middlewares/auth';
+import { auth, adminAuth } from '../../middlewares/auth';
 import {
     createBump,
     deleteBumps,
@@ -27,10 +27,10 @@ router.put("/delete", deleteBumps);
 
 router.get("/fetch-campus", auth, fetchCampus);
 
-router.get("/my-bumps",  auth,auth,getMyBumps);
+router.get("/my-bumps", auth, auth, getMyBumps);
 
-router.get("/rep-bumps", auth,repCreatedBumps);
+router.get("/rep-bumps", adminAuth, repCreatedBumps);
 
-router.put("/bump-status", auth,bumpStatus);
+router.put("/bump-status", adminAuth, bumpStatus);
 
 export default router;
