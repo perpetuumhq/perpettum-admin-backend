@@ -65,7 +65,7 @@ export const STORAGE_FOLDER = {
 };
 
 export const STORAGE_URL =
-    process.env.STORAGE_URL || 'https://storage.googleapis.com/perpetuum-d997d.appspot.com/';
+    process.env.STORAGE_URL || `https://storage.googleapis.com/${STORAGE_BUCKET}/`;
 
 export const AGORA_CONFIG = {
     APP_ID: process.env.AGORA_APP_ID || '',
