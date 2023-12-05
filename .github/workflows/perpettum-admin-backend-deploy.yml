@@ -2,7 +2,7 @@ name: perpettum-admin-backend
 
 on:
     push: # When pushed to testing branch
-        branches: [testing]
+        branches: [master]
 
 env:
     CLOUD_RUN_PROJECT_ID: ${{ secrets.GCS_PROJECT_NAME }}
