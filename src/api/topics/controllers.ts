@@ -3,6 +3,7 @@ import { NextFunction, Response } from 'express';
 import * as service from './service';
 import manageOutput from '../../helpers/data_helpers/manageOutputData';
 import { STORAGE_FOLDER, STORAGE_URL } from '../../config/config';
+import queryArangoKVStore from '../../helpers/arango_helpers/queryArangoKVStore';
 
 
 export const allTopics = async (req: any, res: Response, next: NextFunction): Promise<void> => {
@@ -81,7 +82,15 @@ export const topicPublish = async (req: any, res: Response, next: NextFunction):
     try {
         const { arangodb } = req.app.locals;
         const { topicId } = req.params;
-        await service.updateTopic(arangodb, topicId, { isActive: true });
+        const topic = await queryArangoKVStore.get(arangodb, COL.topics, topicId);
+        if (!topic) {
+            throw new Error('Topic not found!');
+        }
+        if (topic.isActive) {
+            await service.updateTopic(arangodb, topicId, { isActive: false });
+        } else {
+            await service.updateTopic(arangodb, topicId, { isActive: true });
+        }
         res.send({
             status: 200,
             data: 'Topic Published!',
