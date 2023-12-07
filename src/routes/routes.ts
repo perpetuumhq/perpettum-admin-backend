@@ -4,7 +4,8 @@ import { environment } from '../config/config';
 import inviteRoutes from '../api/invite/routes';
 import topicRoutes from '../api/topics/routes';
 import bumpRoutes from '../api/bumps/routes';
-import userRoutes from '../api/user/routes';
+import topicSectionRoutes from '../api/topicSections/routes';
+import campusRoutes from '../api/campus/routes';
 
 const router = express.Router();
 
@@ -16,10 +17,10 @@ router.get('/', (req: any, res: Response) => {
     res.send('PERPETTUM-ADMIN-BACKEND API is running');
 });
 
-
 router.use('/invite', inviteRoutes);
-router.use('/user', userRoutes);
 router.use('/topic', topicRoutes);
-router.use('/bump', bumpRoutes)
+router.use('/room', bumpRoutes);
+router.use('/topic-section', topicSectionRoutes);
+router.use('/campus', campusRoutes);
 
 export default router;

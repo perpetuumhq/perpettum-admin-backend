@@ -11,7 +11,7 @@ export default async function queryArangoDB(arangodb: Database, query: arangoQue
         return {
             data: res?._result || [],
             hasMore: res?._hasMore,
-            ...(res?.count && { count: res?.count }),
+            ...(count && { count: res?._result?.length > 0 ? res?._count : 0 }),
         }
     } catch (err) {
         console.log(err);

@@ -8,21 +8,21 @@ import arangodbConnect from './config/connectArangoDb';
 
 const app = express();
 
-Sentry.init({
-    dsn: "https://b356ec37b3424ea6946cc1bb90f3c88d@o4505600587923456.ingest.sentry.io/4505600589758464",
-    integrations: [
-        // enable HTTP calls tracing
-        new Sentry.Integrations.Http({
-            tracing: true
-        }),
-        // enable Express.js middleware tracing
-        new Sentry.Integrations.Express({
-            app
-        }),
-    ],
-    // Performance Monitoring
-    tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!,
-});
+// Sentry.init({
+//     dsn: "https://b356ec37b3424ea6946cc1bb90f3c88d@o4505600587923456.ingest.sentry.io/4505600589758464",
+//     integrations: [
+//         // enable HTTP calls tracing
+//         new Sentry.Integrations.Http({
+//             tracing: true
+//         }),
+//         // enable Express.js middleware tracing
+//         new Sentry.Integrations.Express({
+//             app
+//         }),
+//     ],
+//     // Performance Monitoring
+//     tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!,
+// });
 
 
 // const storage = async () => {
@@ -62,8 +62,8 @@ app.use(
     })
 );
 
-app.use(Sentry.Handlers.requestHandler());
-app.use(Sentry.Handlers.tracingHandler());
+// app.use(Sentry.Handlers.requestHandler());
+// app.use(Sentry.Handlers.tracingHandler());
 
 app.get('/testing', async (req, res) => {
     // just want to test every db is connected successfully or not

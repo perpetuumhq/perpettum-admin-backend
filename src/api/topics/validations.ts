@@ -15,6 +15,10 @@ export const createTopicSchema = {
             type: 'string',
             sanitize: 'reqText'
         },
+        section: {
+            type: 'string',
+            sanitize: 'reqText'
+        },
         description: {
             type: 'string',
             sanitize: 'reqText'
