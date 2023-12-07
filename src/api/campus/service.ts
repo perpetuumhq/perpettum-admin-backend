@@ -29,7 +29,6 @@ export const createCampus = async (
     arangodb: Database,
     body: any,
 ): Promise<any> => {
-
     const alreadyExist = await doesExistCampus(arangodb, body.name);
     if (alreadyExist) {
         throw new Error('Campus Name Already Exists!');
