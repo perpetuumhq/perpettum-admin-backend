@@ -2,6 +2,7 @@ import { COL, STATUS_MSG } from '../../constants/const';
 import { NextFunction, Response } from 'express';
 import * as service from './service';
 import manageOutput from '../../helpers/data_helpers/manageOutputData';
+import localToUTC from '../../helpers/timeZone_helper/localToUTC';
 
 
 export const allCampus = async (req: any, res: Response, next: NextFunction): Promise<void> => {
@@ -24,7 +25,8 @@ export const createCampus = async (req: any, res: Response, next: NextFunction):
         const { arangodb } = req.app.locals;
 
         const topicBody = {
-            ...req.body
+            ...req.body,
+            goLiveDate: localToUTC(req.body.goLiveDate)
         };
         await service.createCampus(arangodb, topicBody);
         res.send({
@@ -41,7 +43,11 @@ export const updateCampus = async (req: any, res: Response, next: NextFunction):
     try {
         const { arangodb } = req.app.locals;
         const { campusId } = req.params;
-        const body = req.body;
+        const body = {
+            ...req.body,
+            goLiveDate: localToUTC(req.body.goLiveDate)
+        };
+
         await service.updateCampus(arangodb, campusId, body);
         res.send({
             status: 200,
