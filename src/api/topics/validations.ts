@@ -11,6 +11,10 @@ export const createTopicSchema = {
             type: 'string',
             sanitize: 'reqText'
         },
+        bgColor: {
+            type: 'string',
+            sanitize: 'reqText'
+        },
         description: {
             type: 'string',
             sanitize: 'reqText'
