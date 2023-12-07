@@ -4,6 +4,7 @@ import { environment } from '../config/config';
 import inviteRoutes from '../api/invite/routes';
 import topicRoutes from '../api/topics/routes';
 import bumpRoutes from '../api/bumps/routes';
+import topicSectionRoutes from '../api/topicSections/routes';
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.get('/', (req: any, res: Response) => {
 
 router.use('/invite', inviteRoutes);
 router.use('/topic', topicRoutes);
-router.use('/bump', bumpRoutes)
+router.use('/room', bumpRoutes);
+router.use('/topic-section', topicSectionRoutes);
 
 export default router;
