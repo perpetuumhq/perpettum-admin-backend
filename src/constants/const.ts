@@ -17,6 +17,7 @@ export const COL = {
     notificationTemplates: 'test_notificationTemplates',
     topicSections: 'test_topicSections',
     campuses: 'test_colleges',
+    whiteListUsers: 'test_whiteListUsers',
 };
 export const EDGE_COL = {
     room: 'test_room',
