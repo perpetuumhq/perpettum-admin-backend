@@ -6,6 +6,7 @@ import topicRoutes from '../api/topics/routes';
 import bumpRoutes from '../api/bumps/routes';
 import topicSectionRoutes from '../api/topicSections/routes';
 import campusRoutes from '../api/campus/routes';
+import whiteListUsersRoutes from '../api/whiteListUsers/routes';
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use('/topic', topicRoutes);
 router.use('/room', bumpRoutes);
 router.use('/topic-section', topicSectionRoutes);
 router.use('/campus', campusRoutes);
+router.use('/white-list-users', whiteListUsersRoutes);
 
 export default router;
