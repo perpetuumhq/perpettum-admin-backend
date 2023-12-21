@@ -119,7 +119,7 @@ const deleteBufferCompleteTask = async (bump: any): Promise<void> => {
 const bumpBufferCompleteTask = async (arangodb: any, bump: any): Promise<void> => {
     try {
         deleteBufferCompleteTask(bump);
-        const url = `${MAIN_BACKEND_URL}/${bump._key}/buffer-spotlight-selection`;
+        const url = `${MAIN_BACKEND_URL}/bump/${bump._key}/buffer-spotlight-selection`;
         const parent = client.queuePath(PROJECT_ID, BUFFER_END_TASK_QUEUE_LOCATION, BUFFER_END_TASK_QUEUE);
 
         const liveTime: any = utcToLocal(bump.goLiveDate);
