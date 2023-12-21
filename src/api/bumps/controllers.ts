@@ -48,10 +48,10 @@ export const uploadBumpImage = async (
 export const createBump = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { arangodb, timeZone } = req.app.locals;
-        const nowDate = new Date();
-        if (moment(req.body.goLiveDate).isBefore(moment(nowDate))) {
-            throw new Error('goLiveDate is in the past');
-        }
+        // const nowDate = new Date();
+        // if (moment(req.body.goLiveDate).isBefore(moment(nowDate))) {
+        //     throw new Error('goLiveDate is in the past');
+        // }
         const modifiedBody = {
             ...req.body,
             goLiveDate: localToUTC(req.body.goLiveDate, timeZone),
@@ -71,10 +71,10 @@ export const createBump = async (req: any, res: Response, next: NextFunction): P
 export const updateBump = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { arangodb, timeZone } = req.app.locals;
-        const nowDate = new Date();
-        if (moment(req.body.goLiveDate).isBefore(moment(nowDate))) {
-            throw new Error('goLiveDate is in the past');
-        }
+        // const nowDate = new Date();
+        // if (moment(req.body.goLiveDate).isBefore(moment(nowDate))) {
+        //     throw new Error('goLiveDate is in the past');
+        // }
 
         const id = req.body.id;
         delete req.body.id;
@@ -125,9 +125,9 @@ const bumpBufferCompleteTask = async (arangodb: any, bump: any): Promise<void> =
         const liveTime: any = utcToLocal(bump.goLiveDate);
         const nowDate = new Date();
         // check if goLiveDate is in the past
-        if (moment(liveTime).isBefore(moment(nowDate))) {
-            console.log('goLiveDate is in the past');
-        }
+        // if (moment(liveTime).isBefore(moment(nowDate))) {
+        //     console.log('goLiveDate is in the past');
+        // }
         const timeDiffBetweenNowAndGoLiveDate = moment(liveTime).diff(moment(nowDate), 'seconds');
         const scheduleTime = timeDiffBetweenNowAndGoLiveDate + bump.bufferTime;
         const task: any = {
