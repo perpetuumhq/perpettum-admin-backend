@@ -20,6 +20,8 @@ export const ARANGO_DB_PASSWORD = process.env.ARANGO_DB_PASSWORD || '';
 
 export const STORAGE_BUCKET = process.env.STORAGE_BUCKET || '';
 
+export const PROJECT_ID = process.env.PROJECT_ID || '';
+
 let ServiceAccount;
 if (process.env.NODE_ENV === 'production') {
     ServiceAccount = {
@@ -71,3 +73,5 @@ export const AGORA_CONFIG = {
     APP_ID: process.env.AGORA_APP_ID || '',
     APP_CERTIFICATE: process.env.AGORA_APP_CERTIFICATE || ''
 };
+
+export const MAIN_BACKEND_URL = process.env.MAIN_BACKEND_URL || '';
