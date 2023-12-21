@@ -119,3 +119,6 @@ export const NOTIFICATION_TYPE = {
 }
 
 export const TIME_ZONE = 'Asia/Kolkata';
+
+export const BUFFER_END_TASK_QUEUE = 'buffer-complete-task-queue';
+export const BUFFER_END_TASK_QUEUE_LOCATION = 'asia-south1';

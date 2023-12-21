@@ -27,14 +27,19 @@ export const createBump = async (
     body: any,
 ): Promise<any> => {
     const builder = build(
-        create(initialBuilderState, COL.bumps)
+        returnExpr(
+            create(initialBuilderState, COL.bumps),
+            'NEW'
+        )
     );
     const finalQuery = {
         query: builder.query,
         bindVars: { ...builder.bindVars, body: body }
     };
-    await queryArangoDB(arangodb, finalQuery);
-    return 'New Topic Created!';
+    const { data } = await queryArangoDB(arangodb, finalQuery);
+    if (data.length === 0) throw new Error('Error creating new bump');
+
+    return data[0];
 }
 
 export const updateBump = async (
@@ -59,8 +64,9 @@ export const updateBump = async (
         bindVars: { ...builder.bindVars, id: id, body: body }
     };
 
-    await queryArangoDB(arangodb, finalQuery);
-    return 'Bump Updated!';
+    const { data } = await queryArangoDB(arangodb, finalQuery);
+    if (data.length === 0) throw new Error('Error updating bump');
+    return data[0];
 }
 
 export const deleteBumps = async (
@@ -68,15 +74,18 @@ export const deleteBumps = async (
     body: any,
 ): Promise<any> => {
     const builder = build(
-        remove(
-            filterGroup(
-                forIn(initialBuilderState, COL.bumps, 'room'),
-                [
-                    `room._key IN @ids`
-                ]
+        returnExpr(
+            remove(
+                filterGroup(
+                    forIn(initialBuilderState, COL.bumps, 'room'),
+                    [
+                        `room._key IN @ids`
+                    ]
+                ),
+                'room',
+                COL.bumps
             ),
-            'room',
-            COL.bumps
+            'OLD'
         )
     );
 
@@ -85,6 +94,6 @@ export const deleteBumps = async (
         bindVars: { ...builder.bindVars, ids: body.ids }
     };
 
-    await queryArangoDB(arangodb, finalQuery);
-
+    const { data } = await queryArangoDB(arangodb, finalQuery);
+    return data[0]
 }
