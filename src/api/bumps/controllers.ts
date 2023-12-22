@@ -1,18 +1,20 @@
 import { BUFFER_END_TASK_QUEUE, BUFFER_END_TASK_QUEUE_LOCATION, COL, INFO_META, STATUS_MSG } from '../../constants/const';
 import { NextFunction, Response } from 'express';
 import autoId from '../../helpers/generateAutoid';
-import { MAIN_BACKEND_URL, PROJECT_ID, STORAGE_FOLDER, STORAGE_URL } from '../../config/config';
+import { MAIN_BACKEND_URL, SERVICE_ACCOUNT, STORAGE_FOLDER, STORAGE_URL } from '../../config/config';
 import * as service from './service';
 import manageOutput from '../../helpers/data_helpers/manageOutputData';
 import localToUTC from '../../helpers/timeZone_helper/localToUTC';
 import { CloudTasksClient } from '@google-cloud/tasks';
 import moment from 'moment-timezone';
 import utcToLocal from '../../helpers/timeZone_helper/utcToLocal';
-import { build, filter, forIn, initialBuilderState } from '../../helpers/arango_helpers/dymamicArangoQuery';
 
 const client = new CloudTasksClient({
-    projectId: PROJECT_ID,
-    keyFilename: 'serviceAccountKey.json'
+    projectId: SERVICE_ACCOUNT.projectId,
+    credentials: {
+        client_email: SERVICE_ACCOUNT.clientEmail,
+        private_key: SERVICE_ACCOUNT.privateKey
+    }
 });
 
 export const getAllBumps = async (req: any, res: Response, next: NextFunction): Promise<void> => {
@@ -120,16 +122,19 @@ const bumpBufferCompleteTask = async (arangodb: any, bump: any): Promise<void> =
     try {
         deleteBufferCompleteTask(bump);
         const url = `${MAIN_BACKEND_URL}/bump/${bump._key}/buffer-spotlight-selection`;
-        const parent = client.queuePath(PROJECT_ID, BUFFER_END_TASK_QUEUE_LOCATION, BUFFER_END_TASK_QUEUE);
+        const parent = client.queuePath(SERVICE_ACCOUNT.projectId, BUFFER_END_TASK_QUEUE_LOCATION, BUFFER_END_TASK_QUEUE);
 
         const liveTime: any = utcToLocal(bump.goLiveDate);
         const nowDate = new Date();
-        // check if goLiveDate is in the past
-        // if (moment(liveTime).isBefore(moment(nowDate))) {
-        //     console.log('goLiveDate is in the past');
-        // }
-        const timeDiffBetweenNowAndGoLiveDate = moment(liveTime).diff(moment(nowDate), 'seconds');
-        const scheduleTime = timeDiffBetweenNowAndGoLiveDate + bump.bufferTime;
+        // check if goLiveD10ate is in the past
+        let scheduleTime = Date.now() / 1000;
+        if (moment(liveTime).isBefore(moment(nowDate))) {
+            console.log('goLiveDate is in the past');
+        } else {
+            const timeDiffBetweenNowAndGoLiveDate = moment(liveTime).diff(moment(nowDate), 'seconds');
+            scheduleTime = timeDiffBetweenNowAndGoLiveDate + bump.bufferTime;
+        }
+
         const task: any = {
             httpRequest: {
                 url,
