@@ -15,7 +15,6 @@ export const COL = {
     feedback: 'test_feedback',
     invite: 'test_invite',
     notificationTemplates: 'test_notificationTemplates',
-    topicSections: 'test_topicSections',
     campuses: 'test_colleges',
     whiteListUsers: 'test_whiteListUsers',
 };
