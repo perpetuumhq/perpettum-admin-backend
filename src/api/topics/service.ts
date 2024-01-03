@@ -6,15 +6,19 @@ import queryArangoDB from "../../helpers/arango_helpers/queryArangoDB";
 
 export const allTopics = async (
     arangodb: Database,
-    active = null
+    active = null,
+    isParent = null
 ): Promise<any> => {
-    // in active variable, can pass null or true/false, if not null ,then will filter by active
+    const filterTopics = active && isParent ?
+        `topic.isActive == @active && topic.isParent == @isParent`
+        : active ? `topic.isActive == @active` : null;
+
     const builder = build(
         returnExpr(
             joinMultiple(
-                active !== null ? filter(
+                filterTopics !== null ? filter(
                     forIn(initialBuilderState, COL.topics, 'topic'),
-                    `topic.isActive == @active`
+                    filterTopics
                 ) : forIn(initialBuilderState, COL.topics, 'topic'),
                 'topic',
                 [
@@ -34,7 +38,8 @@ export const allTopics = async (
         query: builder.query,
         bindVars: {
             ...builder.bindVars,
-            ...(active !== null && { active: Boolean(active) })
+            ...(active !== null && { active: Boolean(active) }),
+            ...(isParent !== null && { isParent: Boolean(isParent) })
         }
     };
     const { data, count } = await queryArangoDB(arangodb, finalQuery, true);

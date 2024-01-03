@@ -9,8 +9,8 @@ import queryArangoKVStore from '../../helpers/arango_helpers/queryArangoKVStore'
 export const allTopics = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { arangodb } = req.app.locals;
-        const { active } = req.query;
-        const { data, count } = await service.allTopics(arangodb, active);
+        const { active, isParent } = req.query;
+        const { data, count } = await service.allTopics(arangodb, active, isParent);
 
         res.send({
             status: 200,

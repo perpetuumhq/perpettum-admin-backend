@@ -36,7 +36,6 @@ export const createTopicSchema = {
             }
         }
     },
-    additionalProperties: false
 };
 
 export const updateTopicOrderSchema = {
