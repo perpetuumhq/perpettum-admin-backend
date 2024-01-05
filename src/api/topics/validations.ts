@@ -7,19 +7,15 @@ export const createTopicSchema = {
             type: 'string',
             sanitize: 'reqText'
         },
+        description: {
+            type: 'string',
+            sanitize: 'reqText'
+        },
         icon: {
             type: 'string',
             sanitize: 'reqText'
         },
         bgColor: {
-            type: 'string',
-            sanitize: 'reqText'
-        },
-        section: {
-            type: 'string',
-            sanitize: 'reqText'
-        },
-        description: {
             type: 'string',
             sanitize: 'reqText'
         },
