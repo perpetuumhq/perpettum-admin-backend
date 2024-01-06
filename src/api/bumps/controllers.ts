@@ -35,7 +35,7 @@ export const uploadBumpImage = async (
     try {
         const { db, admin } = req.app.locals;
         const { bumpId } = req.params;
-        const imageUrl = `${STORAGE_URL}${STORAGE_FOLDER.room}/${req.file.filename}`;
+        const imageUrl = `${STORAGE_URL}${req.file.filename}`;
 
         res.send({
             status: 200,

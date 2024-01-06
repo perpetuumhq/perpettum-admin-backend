@@ -8,7 +8,7 @@ const googleCloudStorageEngine: Multer.StorageEngine = {
         const fileName = `${uuidv4()}-${Date.now()}-${file.originalname.replace(/\s/g, '')}`;
         const storage = req.app.locals.storage;
         const bucket = storage.bucket();
-        const writeStream = bucket.file(`${STORAGE_FOLDER.room}/${fileName}`).createWriteStream({
+        const writeStream = bucket.file(`${fileName}`).createWriteStream({
             metadata: {
                 contentType: file.mimetype
             }
