@@ -1,3 +1,6 @@
+import { STORAGE_URL } from "../../config/config";
+import utcToLocal from "../utcToLocalTime";
+
 /**
  * Outputs data, whether it's a single object or an array of objects.
  * Optionally removes specified keys from the output. By default, removes _key, _id, and _rev.
@@ -10,6 +13,7 @@
  */
 export default function manageOutput(data: any, keysToRemove = []) {
     const removeKeys = (obj: any, keys: any) => {
+        obj = applyKeyTransformations(obj);
         if (obj._key) {
             obj.id = obj._key;
             delete obj._key;
@@ -34,3 +38,28 @@ export default function manageOutput(data: any, keysToRemove = []) {
         return removeKeys({ ...data }, keysToRemove);
     }
 }
+
+
+const applyKeyTransformations = (obj: any) => {
+
+    // Transform _key to id
+    if (obj._key) {
+        obj.id = obj._key;
+        delete obj._key;
+    }
+
+    // for audio url
+    if (obj.file) {
+        obj.file = `${STORAGE_URL}${obj.file}`
+    }
+
+    const customDateField = ['goLiveDate'];
+
+    ['createdAt', 'updatedAt', 'publishedAt', 'rejectedAt', 'validTill', ...customDateField].forEach(key => {
+        if (obj[key]) {
+            obj[key] = utcToLocal(obj[key]);
+        }
+    })
+
+    return obj;
+};

@@ -7,6 +7,7 @@ import bumpRoutes from '../api/bumps/routes';
 import campusRoutes from '../api/campus/routes';
 import whiteListUsersRoutes from '../api/whiteListUsers/routes';
 import notificationTemplatesRoutes from '../api/notificationTemplates/routes';
+import teamDrive from '../api/teamDrive/routes';
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use('/room', bumpRoutes);
 router.use('/campus', campusRoutes);
 router.use('/white-list-users', whiteListUsersRoutes);
 router.use('/notification-templates', notificationTemplatesRoutes);
+router.use('/team-drive', teamDrive);
 
 export default router;
